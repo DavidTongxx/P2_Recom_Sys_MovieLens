@@ -28,5 +28,5 @@ ML_df %>% group_by(occupation) %>% summarise(mean = mean(rating), sd = sd(rating
 # 5 highest rating interval
 ML_df %>% group_by(occupation) %>% summarise(mean = mean(rating), sd = sd(rating)) %>% 
   mutate(lower_bound = ifelse(mean - 2*sd > 0, mean - 2*sd, 0),
-         upper_bound = ifelse(mean + 2*sd < 5, mean + 2*sd, 5)) %>% # An appro. estimate of interval
+         upper_bound = ifelse(mean + 2*sd < 5, mean + 2*sd, 5)) %>% # An approximate estimate of interval
   arrange(desc(lower_bound)) %>% head(5) # display the top 5
