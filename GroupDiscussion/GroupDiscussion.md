@@ -14,3 +14,6 @@ I'll explore the genre file and make some graphs splitting things along heavy/me
 
 David:
 I'll explore the missing vlaue and try to group the users based on thoes missing values
+
+Michael:
+Explore the file u.user which contains user information of age, gender, occupation and zip code for each of 943 users.
