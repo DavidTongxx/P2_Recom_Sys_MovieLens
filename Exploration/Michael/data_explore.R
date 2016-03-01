@@ -14,7 +14,7 @@ user <- read.table("./Data/ml-100k/u.user", sep = "|",
                    col.names = c("user_id", "age", "gender", "occupation", "zipcode"))
 # A summarizing plot of each occupation
 user %>% ggplot(aes(x = reorder(occupation, table(occupation)[occupation]), fill = gender)) + geom_bar(aes(y = (..count..)/sum(..count..))) + #stat = 'identity') +
-  coord_flip() + xlab("Occupation") + ylab("Proportion") + ggtitle("Occupation Summary") #+ scale_y_continuous(labels = percent)
+  coord_flip() + xlab("Occupation") + ylab("Proportion") + ggtitle("Occupation Proportion") #+ scale_y_continuous(labels = percent)
 
 # merge the rating data.frame and user info.
 ML_df <- left_join(ML_df, user, by = c("user" = "user_id")) # "user" in ML_df is Factor
