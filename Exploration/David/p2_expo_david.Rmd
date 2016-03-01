@@ -6,7 +6,7 @@ output: html_document
 
 - Exploration for Recommend system
 
-###PartI Recommenderlab###
+###Dataset:u.data ###
 
 ```{r}
 suppressPackageStartupMessages({
@@ -14,9 +14,6 @@ suppressPackageStartupMessages({
    library(dplyr) 
    library(ggplot2) 
    })
-
-data(MovieLense)
-
 ```
 
 
@@ -28,6 +25,18 @@ Basic Info.
 Survey: 7-month Sep.19,1997 - April 22,1998 
 This data has been cleaned up - users who had less than 20 ratings or did not have complete demographic information were removed from this data set.
 
+
+Dataset
+
+u.data     -- The full u data set, 100000 ratings by 943 users on 1682 items.
+              Each user has rated at least 20 movies.  Users and items are
+              numbered consecutively from 1.  The data is randomly
+              ordered. This is a tab separated list of 
+	         user id | item id | rating | timestamp. 
+              The time stamps are unix seconds since 1/1/1970 UTC   
+
+
+
 CITATION
 ==============================================
 
@@ -38,6 +47,52 @@ History and Context. ACM Transactions on Interactive Intelligent
 Systems (TiiS) 5, 4, Article 19 (December 2015), 19 pages.
 DOI=http://dx.doi.org/10.1145/2827872
 
+```{r}
+# udata<- read.table("http://files.grouplens.org/datasets/movielens/ml-100k/u.data")
+# names(udata) <- c("User_id","Item_id","Rating","Timestamp")
+# head(udata)
+
+#delete Timestamp
+#udata<-udata[,1:3]
+
+# udata <- data.frame(udata)
+# save(udata,file="udata.Rda")
+
+# setwd("~/GitHub/P2_Recom_Sys_MovieLens/Exploration/David")
+
+load("./data/udata.Rda")
+```
 
 
+```{r}
+Unique_id <-unique(udata$User_id)
+id_count<- function(id) {
+  return(dim(udata[udata$User_id==id ,])[1])
+}
+#count how many lines for each unique Id
+count_result<-sapply(X=Unique_id,FUN=id_count)
+#summary the reuslts
+table(count_result)
+#qplot()
 
+count_result_df <- data.frame(count_result)
+colnames(count_result_df)[1] <-"Numb_of_Movies"
+count_result_df$id <- rownames(count_result_df)
+
+movie_numb_median <- median(count_result_df$Numb_of_Movies)
+# R.K the blue line indicates the median of count_result
+p1 <-ggplot(count_result_df, aes(Numb_of_Movies)) +geom_histogram(binwidth = 3)+
+        geom_vline(xintercept = movie_numb_median,colour="steelblue",linetype = "longdash")+
+        ggtitle("Histogram of movie counts(bw=3)")
+
+#ggsave("./image/week7_hist.png",plot=p1)
+
+#divide users into two groups: 
+#Movie lovers: rating numb. in [20,65]  Movie enthusiasts: rating numb. in [66,737]
+
+#Movie lovers
+u_id_1<-count_result_df[count_result_df$Numb_of_Movies<66,]$id
+#Movie enthusiasts
+u_id_2<-count_result_df[count_result_df$Numb_of_Movies>65,]$id
+
+```
