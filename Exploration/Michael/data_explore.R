@@ -30,3 +30,25 @@ ML_df %>% group_by(occupation) %>% summarise(mean = mean(rating), sd = sd(rating
   mutate(lower_bound = ifelse(mean - 2*sd > 0, mean - 2*sd, 0),
          upper_bound = ifelse(mean + 2*sd < 5, mean + 2*sd, 5)) %>% # An approximate estimate of interval
   arrange(desc(lower_bound)) %>% head(5) # display the top 5
+
+# Use group division criterion from David and plot for each sub-group
+# u_id_1: user id for those who rated less than 66
+# u_id_2: user id for those who rated more or equal to 66
+
+# Occupation plot for each sub-group
+user %>% mutate(group = ifelse(user_id %in% u_id_1, "group1 (# of rating < 66)", "group2 (# of rating >= 66)")) %>% 
+  ggplot(aes(x = reorder(occupation, table(occupation)[occupation]), fill = gender)) + geom_bar(aes(y = (..count..)/sum(..count..))) +
+  facet_grid(.~group) +
+  coord_flip() + xlab("Occupation") + ylab("Proportion") + ggtitle("Occupation Proportion") 
+
+# Average rating plot for each sub-group in the same order as in the overall plot
+ML_df %>% mutate(group = ifelse(user %in% u_id_1, "group1 (# of rating < 66)", "group2 (# of rating >= 66)")) %>% 
+  group_by(occupation, group) %>% summarise(mean = mean(rating)) %>%
+  ggplot(aes(x = factor(occupation, levels = rev(ord$occupation)), y = mean)) + geom_point(size = 3) +
+  facet_grid(.~group) +
+  coord_flip() + xlab("Occupation") + ylab("Rating Average") + ggtitle("Average Rating for Each Occupation")
+
+
+
+
+
