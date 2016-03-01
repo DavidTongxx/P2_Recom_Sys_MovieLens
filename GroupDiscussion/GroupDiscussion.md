@@ -11,3 +11,6 @@ By Xingxing Feb.28
 
 Alex:
 I'll explore the genre file and make some graphs splitting things along heavy/medium/mild users to explore genre
+
+David:
+I'll explore the missing vlaue and try to group the users based on thoes missing values
