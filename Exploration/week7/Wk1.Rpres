@@ -1,0 +1,26 @@
+MovieLens Datasets Study - Exploration and Visualization
+========================================================
+author: David, Alex, Michael
+date: 03/02/2016
+
+Outline
+========================================================
+
+- MovieLens Data Set
+- Movie Rating
+- User Information
+- Movie Genre
+
+Slide With Code
+========================================================
+
+```{r}
+summary(cars)
+```
+
+Slide With Plot
+========================================================
+
+```{r, echo=FALSE}
+plot(cars)
+```
