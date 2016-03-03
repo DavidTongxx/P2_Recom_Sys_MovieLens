@@ -65,13 +65,16 @@ load("./data/udata.Rda")
 
 
 ```{r}
+
 Unique_id <-unique(udata$User_id)
+
 id_count<- function(id) {
   return(dim(udata[udata$User_id==id ,])[1])
 }
 #count how many lines for each unique Id
 count_result<-sapply(X=Unique_id,FUN=id_count)
 #summary the reuslts
+
 table(count_result)
 #qplot()
 
@@ -94,5 +97,15 @@ p1 <-ggplot(count_result_df, aes(Numb_of_Movies)) +geom_histogram(binwidth = 3)+
 u_id_1<-count_result_df[count_result_df$Numb_of_Movies<66,]$id
 #Movie enthusiasts
 u_id_2<-count_result_df[count_result_df$Numb_of_Movies>65,]$id
+
+```
+
+```{r}
+ggplot(count_result_df, aes(Numb_of_Movies)) +geom_histogram(binwidth = 1)+
+        geom_vline(xintercept = movie_numb_median,colour="steelblue",linetype = "longdash")+
+        geom_vline(xintercept = 100,colour="red",linetype = "longdash")+
+        ggtitle("Histogram of movie counts(bw=3)")
+
+
 
 ```
