@@ -1,4 +1,4 @@
-MovieLens Datasets Study - Exploration and Visualization
+MovieLens Dataset Study - Exploration and Visualization
 ========================================================
 author: David, Alex, Michael
 date: 03/02/2016
@@ -6,21 +6,55 @@ date: 03/02/2016
 Outline
 ========================================================
 
-- MovieLens Data Set
+- MovieLens Data Background
 - Movie Rating
 - User Information
 - Movie Genre
 
-Slide With Code
+MovieLens Data
 ========================================================
+- Collected by the GroupLens Research Project
+at the University of Minnesota
+- 100,000 ratings (1-5) from 943 users on 1682 movies
+- Each user has rated at least 20 movies
+- Demographic info for the users (age, gender, occupation, zip)
+- 19 genres to characterize the movie (Action, Comedy, Horror, ...)
 
-```{r}
-summary(cars)
-```
 
-Slide With Plot
+Number of Rated Movies per User
 ========================================================
+The distribution of number of movies one user rated is highly right skewed with a long tail.</br>
+The median number of movies one user rated is 65. (Used to divide the group)
 
-```{r, echo=FALSE}
-plot(cars)
-```
+<div align="center">
+<img src="Wk1-figure/week7_hist.png" width=800 height=400>
+</div>
+
+User Information
+========================================================
+![alt text](Wk1-figure/Overall_occupation.png)
+***
+![alt text](Wk1-figure/Overall_ave_rating.png)
+
+After Group Division
+========================================================
+![alt text](Wk1-figure/Subgroup_Occupation.png)
+***
+![alt text](Wk1-figure/Subgroup_avgRating.png)
+
+Movie Genre
+========================================================
+- Multi-genres associated with one film. The exact distribution is (833, 569, 215, 51, 11, 3), for number of labels = 1, 2, ..., 6
+- Rating of "fun" genres like Action, Horror and Family is very low, while "serious" genres like Drama, Documentary and War are very highly rated given the variation of different number of movies for each genre.
+
+Movie Genre
+========================================================
+![alt text](Wk1-figure/RatingsGenre.png)
+
+
+========================================================
+incremental: true
+</br></br></br>
+## Questions?
+</br>
+## Thank you!
