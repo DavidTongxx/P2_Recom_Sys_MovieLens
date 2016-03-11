@@ -17,3 +17,11 @@ I'll explore the missing vlaue and try to group the users based on thoes missing
 
 Michael:
 Explore the file u.user which contains user information of age, gender, occupation and zip code for each of 943 users.
+
+#GroupDiscussion2 week8
+
+1)Movie's popularity index
+
+We tried to add number of raters for each movie. It can be viewed as an index of movies' popularity. Apparently, there is pointless to compare the rater number of movies which released in 1994 with the rater number of movies which released in 1964. So, the released year of movies is also included to normalize movies' popularity.
+
+By Xingxing March 11
