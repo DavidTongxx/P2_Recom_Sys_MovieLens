@@ -25,3 +25,12 @@ Explore the file u.user which contains user information of age, gender, occupati
 We tried to add number of raters for each movie. It can be viewed as an index of movies' popularity. Apparently, there is pointless to compare the rater number of movies which released in 1994 with the rater number of movies which released in 1964. So, the released year of movies is also included to normalize movies' popularity.
 
 By Xingxing March 11
+
+#GroupDiscussion3 week9
+Week 9 1st Group discussion Monday 
+Details
+
+Reservation Id: 165492
+Organization: UW-Madison
+Date	    Start	  End	   Library/Building  	Room	   Status
+3/14/2016	1:30 PM	2:30 PM	WENDT	Wendt     135 Study Room	Reserved
