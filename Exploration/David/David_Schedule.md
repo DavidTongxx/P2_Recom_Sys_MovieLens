@@ -22,7 +22,7 @@ Here we will only focus on the second part 2) Collaborative filtering recommende
 
 [1]create affinity matrix based on the demographic information of users [ say ---> first 500 users]
 
-[2]combining user's rating information prediction movie for "active" user.
+[2]combine user's rating information prediction movie for "active" user.
 
 Xingxing March 15th
 
