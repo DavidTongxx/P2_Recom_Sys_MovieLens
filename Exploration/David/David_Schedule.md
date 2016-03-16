@@ -22,7 +22,12 @@ Here we will only focus on the second part 2) Collaborative filtering recommende
 
 [1]create affinity matrix based on the demographic information of users [ say ---> first 500 users]
 
-[2]combine user's rating information prediction movie for "active" user.
+This week and next week -> combine age,occupation,gender,....,
+
+We also need to use those user's rating scores to test our affinity matrix. However, no rating information should be include in building this affinity matrix. This part is littlbe bit tricky but this matrix is crucial in the future.
+
+
+[2]combine user's rating information prediction movie for "active" user. [Application of CHTC]
 
 Xingxing March 15th
 
