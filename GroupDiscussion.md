@@ -34,3 +34,6 @@ Reservation Id: 165492
 Organization: UW-Madison
 Date	    Start	  End	   Library/Building  	Room	   Status
 3/14/2016	1:30 PM	2:30 PM	WENDT	Wendt     135 Study Room	Reserved
+
+Michael:
+Define distance function for each variable (age, gender, occupation, zip-code) and use weighted average to combine them to measure the dissimilarity between any two users. Will implement the distance function in R.
