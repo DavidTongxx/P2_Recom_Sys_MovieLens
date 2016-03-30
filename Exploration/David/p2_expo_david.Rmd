@@ -105,7 +105,8 @@ ggplot(count_result_df, aes(Numb_of_Movies)) +geom_histogram(binwidth = 1)+
         geom_vline(xintercept = movie_numb_median,colour="steelblue",linetype = "longdash")+
         geom_vline(xintercept = 100,colour="red",linetype = "longdash")+
         ggtitle("Histogram of movie counts(bw=3)")
-
-
-
 ```
+
+
+
+
