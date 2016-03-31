@@ -244,7 +244,7 @@ out = lm(AvgRating ~ ., data = design.matrix)
 
 #out = lm(AvgRating ~ ., data = df.movies[,-c(1:5, 26:30)])
 
-#df.genre$fittedGenres = unname(out$coefficients)[2:20] + unname(out$coefficients[1])
+df.genre$fittedGenres = c(unname(out$coefficients)[2:19] + unname(out$coefficients[1]),  unname(out$coefficients[1]))
 
 
 df.movies$expectedGenreRating = fitted(out)
