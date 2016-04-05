@@ -48,13 +48,14 @@ Systems (TiiS) 5, 4, Article 19 (December 2015), 19 pages.
 DOI=http://dx.doi.org/10.1145/2827872
 
 ```{r}
+#setwd("~/GitHub/P2_Recom_Sys_MovieLens/Exploration/David")
+
 # udata<- read.table("http://files.grouplens.org/datasets/movielens/ml-100k/u.data")
 # names(udata) <- c("User_id","Item_id","Rating","Timestamp")
 # head(udata)
 
 #delete Timestamp
 #udata<-udata[,1:3]
-
 # udata <- data.frame(udata)
 # save(udata,file="udata.Rda")
 
@@ -65,7 +66,6 @@ load("./data/udata.Rda")
 
 
 ```{r}
-
 Unique_id <-unique(udata$User_id)
 
 id_count<- function(id) {
@@ -75,7 +75,7 @@ id_count<- function(id) {
 count_result<-sapply(X=Unique_id,FUN=id_count)
 #summary the reuslts
 
-table(count_result)
+#table(count_result)
 #qplot()
 
 count_result_df <- data.frame(count_result)
@@ -83,10 +83,7 @@ colnames(count_result_df)[1] <-"Numb_of_Movies"
 count_result_df$id <- rownames(count_result_df)
 
 movie_numb_median <- median(count_result_df$Numb_of_Movies)
-# R.K the blue line indicates the median of count_result
-p1 <-ggplot(count_result_df, aes(Numb_of_Movies)) +geom_histogram(binwidth = 3)+
-        geom_vline(xintercept = movie_numb_median,colour="steelblue",linetype = "longdash")+
-        ggtitle("Histogram of movie counts(bw=3)")
+
 
 #ggsave("./image/week7_hist.png",plot=p1)
 
@@ -101,7 +98,7 @@ u_id_2<-count_result_df[count_result_df$Numb_of_Movies>65,]$id
 ```
 
 ```{r}
-ggplot(count_result_df, aes(Numb_of_Movies)) +geom_histogram(binwidth = 1)+
+ggplot(count_result_df, aes(Numb_of_Movies)) +geom_histogram(binwidth = 3)+
         geom_vline(xintercept = movie_numb_median,colour="steelblue",linetype = "longdash")+
         geom_vline(xintercept = 100,colour="red",linetype = "longdash")+
         ggtitle("Histogram of movie counts(bw=3)")
@@ -110,3 +107,98 @@ ggplot(count_result_df, aes(Numb_of_Movies)) +geom_histogram(binwidth = 1)+
 
 
 
+##Movie
+
+###Exploration of weights estimating
+
+
+
+Aim1: Find Top 100 Popular Movies (Popularity depends on # ratings)
+
+Variable: MV_100Id
+
+
+Aim2: Based on the top 100 movie list find the users who rates those movies.(943 users in total)
+
+Variable:  User_M100
+
+
+Aim3: For each movie, a list is generated to show which user has rated this movie
+
+Variable:  movie_user_table
+
+Aim4: Estimate weights for each movie based on the information derived above 
+
+
+```{r}
+Unique_Mid <-unique(udata$Item_id)
+
+id_Mcount<- function(id) {
+  return(dim(udata[udata$Item_id==id ,])[1])
+}
+
+# dim(udata[udata$Item_id==1,])
+# id_Mcount(1)
+
+
+count_Mresult<-sapply(X=Unique_Mid,FUN=id_Mcount)
+
+count_Mresult_df <- data.frame(count_Mresult)
+colnames(count_Mresult_df)[1] <-"Numb_of_Ratings"
+count_Mresult_df$ItemId <- Unique_Mid
+
+ggplot(count_Mresult_df, aes(Numb_of_Ratings)) +geom_histogram(binwidth = 3)+
+        ggtitle("Histogram of Rating counts(bw=3)")
+
+
+reorder_countM<- count_Mresult_df[order(-count_Mresult_df$Numb_of_Ratings),]
+
+#Top 100 popular Movies
+countM_100<-reorder_countM[1:100,]
+
+#delete the rowname
+rownames(countM_100) <- NULL
+
+#Range of # Ratings
+range(countM_100$Numb_of_Ratings)
+
+#Movies in this list have at least 218 ratings.
+ggplot(countM_100, aes(Numb_of_Ratings)) +geom_histogram(bins = 20)+
+        ggtitle("Histogram of Rating counts(bin=20)")
+
+#Top 100 popular Movies ID
+MV_100Id<-countM_100$ItemId
+
+#People rated 100 popular Movies
+User_M100 <- udata[udata$Item_id %in% MV_100Id,]$User_id
+
+#how many people in the list
+length(unique(User_M100))
+
+
+userId_M<-function(Movie_id){
+  return( udata[udata$Item_id==Movie_id,]$User_id )
+}
+
+
+
+# a list of 100 each list indicates user who rated the movie
+movie_user_table <-sapply(X=MV_100Id,FUN=userId_M)
+
+# each row indicates a movie
+# each column indicates a user
+rating_mat <- matrix(data=rep(0,943*100),nrow=100,ncol=943)
+
+for(i in 1:100){
+  for(j in 1:943){
+    if(j %in% movie_user_table[[i]])
+        rating_mat[i,j]=1
+  }
+}
+
+
+image(rating_mat)
+heatmap(rating_mat)
+
+
+```
