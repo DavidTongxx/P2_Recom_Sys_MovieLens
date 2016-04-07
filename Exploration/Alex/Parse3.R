@@ -1,4 +1,4 @@
-#rm(list=ls())
+rm(list=ls())
 
 library("recommenderlab")
 library(ggplot2)
@@ -93,7 +93,7 @@ affinity_mat <- function(user_df) { # user_df is the data frame of user info.
 }
 
 
-system.time(affinity_matrix <- affinity_mat(user[1:843, ]))
+#system.time(affinity_matrix <- affinity_mat(user[1:843, ]))
 
 
 
@@ -221,35 +221,48 @@ ratingListByMovie = mapply(
 
 
 
-df.movies$AvgRating = mapply(
-  FUN=mean_unlist,
-  indexList=ratingListByMovie,
-  MoreArgs=list(data=df.ratings, column=3)  
-)
+# df.movies$AvgRating = mapply(
+#   FUN=mean_unlist,
+#   indexList=ratingListByMovie,
+#   MoreArgs=list(data=df.ratings, column=3)  
+# )
 
-ratingsByMovie = mapply(
+ratingsByMovie = t(mapply(
   FUN=dist_unlist,
   indexList=ratingListByMovie,
   MoreArgs=list(data=df.ratings, column=3)  
-)
+))
 
-df.movies[,c("1","2","3","4","5")] = t(ratingsByMovie)
+df.movies$AvgRating = rep(0, times=1682)
+  
+for(i in 1:1682)
+{
+  df.movies$AvgRating[i] = sum(ratingsByMovie[i,1:5]*(1:5))/sum(ratingsByMovie[i,1:5])
+}
+  
 
-design.matrix = df.movies[,-c(1:5, 26:30)]
+
+df.movies[,c("1","2","3","4","5")] = ratingsByMovie
+
+numRatings = apply(df.movies[,26:30], MARGIN=1, FUN=sum)
+
+
+design.matrix = df.movies[,-c(1:5, 25:30)]
 for(i in 1:dim(design.matrix)[1])
 {
   design.matrix[i,1:19] = design.matrix[i,1:19]/sum(design.matrix[i,1:19])
 }
-out = lm(AvgRating ~ ., data = design.matrix)
+out = lm(df.movies$AvgRating ~ ., data = design.matrix, weights=numRatings)
 
-#out = lm(AvgRating ~ ., data = df.movies[,-c(1:5, 26:30)])
+# df.movieReg = df.movies[,c(6:24)]/apply(df.movies[,c(6:24)], MARGIN=1, FUN=sum)
+# 
+# out = lm(df.movies$AvgRating ~ ., data = df.movieReg)
 
 df.genre$fittedGenres = c(unname(out$coefficients)[2:19] + unname(out$coefficients[1]),  unname(out$coefficients[1]))
 
 
 df.movies$expectedGenreRating = fitted(out)
   
-numRatings = apply(df.movies[,26:30], MARGIN=1, FUN=sum)
 
 PriorRatings = (numRatings*df.movies$AvgRating + 20*df.movies$expectedGenreRating)/
                 (numRatings + 20)
@@ -280,66 +293,83 @@ ratingListByMovie.test = mapply(
 
 moviesByAdjRating = df.movies[sort(df.movies$adjustedRating, index.return=TRUE, decreasing=TRUE)$ix,c(2,3,25,31,32)]
 
-recommended = matrix(numeric(1682*100), nrow = 1682)
-actual = matrix(numeric(1682*100), nrow = 1682)
+moviesByAvgRating = df.movies[sort(PriorRatings, index.return=TRUE, decreasing=TRUE)$ix,c(2,3,25,31,32)]
 
-for(i in 1:1682)
-{
-  trainRatings = df.ratingsTraining[ratingListByMovie.train[[i]],]
-  testRatings = df.ratingsTest[ratingListByMovie.test[[i]],]
-  
-  if(dim(testRatings)[1] == 0 || dim(testRatings)[1] == 0)
-  {
-    actual[i,] = 0
-    recommended[i,] = 0
-    next
-  }
-  for(j in 1:100)
-  {
-    if(testRatings[testRatings$userid==j+743,2] == i)
-    {
-      actual[i,j] = testRatings[testRatings$userid==j+743,2]
-    }
-    else
-    {
-      actual[i,j] = 0
-    }
-    j+743
-    recommended[i,j]
-    
-  }
 
-}
 
+moviesByNumRating = df.movies[sort(numRatings, index.return=TRUE, decreasing=TRUE)$ix,c(2,3,25,31,32)]
+moviesByNumRating$numRatings = sort(numRatings, index.return=FALSE, decreasing=TRUE)
+
+
+
+
+# recommended = matrix(numeric(1682*100), nrow = 1682)
+# actual = matrix(numeric(1682*100), nrow = 1682)
 # 
-# p1 = ggplot(df.sortedUsers) +
-#       geom_smooth(
-#       aes(x=sortedOrder, 
-#           y=cumulative)
-#       )  +
-#   theme(panel.grid.major = element_line(color = "blue", linetype="dotted"))+
-#   labs(title="CDF of reviews by users", x="Users (from least to most prolific)", y="Cumulative Total Reviews")
+# for(i in 1:1682)
+# {
+#   trainRatings = df.ratingsTraining[ratingListByMovie.train[[i]],]
+#   testRatings = df.ratingsTest[ratingListByMovie.test[[i]],]
+#   
+#   if(dim(testRatings)[1] == 0 || dim(testRatings)[1] == 0)
+#   {
+#     actual[i,] = 0
+#     recommended[i,] = 0
+#     next
+#   }
+#   for(j in 1:100)
+#   {
+#     if(testRatings[testRatings$userid==j+743,2] == i)
+#     {
+#       actual[i,j] = testRatings[testRatings$userid==j+743,2]
+#     }
+#     else
+#     {
+#       actual[i,j] = 0
+#     }
+#     j+743
+#     recommended[i,j]
+#     
+#   }
 # 
-# p2 = ggplot(df.sortedUsers,aes(x=numFilms)) +
-#   geom_histogram(binwidth=1) + 
-#   geom_step(aes(stat="ecdf", y=(sortedOrder*100/max(sortedOrder)))) +
-#   geom_step(aes(stat="ecdf", y=(cumulative*100/max(cumulative)))) + 
-#   theme(panel.grid.major = element_line(color = "blue", linetype="dotted"))+
-#   labs(title="CDF of reviews, users + Histogram of films reviewed", x="Films Reviewed", y="Count (Histogram)/% of Users/Reviews")
-# 
-# grid.arrange(p1,p2)
-# 
-# 
-# # p3 = ggplot(df.genre, aes(x=genre, y=mean_rating_star(df.genre[5:9]), size=numFilms)) +
-# #   geom_point() + labs(title="Distribution of Films/Ratings by Genre", y = "Rating")
-# 
-#  p3 = ggplot(df.genre, aes(x=genre, y=AvgRating, size=numFilms)) +
-#    geom_point() + labs(title="Distribution of Films/Ratings by Genre", y = "Rating")
-# 
-# 
-# p4 = ggplot(df.movies, aes(x=apply(df.movies[6:24], MARGIN=1, FUN=sum), y=AvgRating)) +
-#   geom_point() + labs(title="Number of genres Per Movie", x="# of Genres", y="Film Rating")
-# 
-# 
-# 
-# grid.arrange(p3,p4)
+# }
+
+
+p1 = ggplot(df.sortedUsers) +
+      geom_smooth(
+      aes(x=sortedOrder, 
+          y=cumulative)
+      )  +
+  theme(panel.grid.major = element_line(color = "blue", linetype="dotted"))+
+  labs(title="CDF of reviews by users", x="Users (from least to most prolific)", y="Cumulative Total Reviews")
+
+p2 = ggplot(df.sortedUsers,aes(x=numFilms)) +
+  geom_histogram(binwidth=1) + 
+  geom_step(aes(stat="ecdf", y=(sortedOrder*100/max(sortedOrder)))) +
+  geom_step(aes(stat="ecdf", y=(cumulative*100/max(cumulative)))) + 
+  theme(panel.grid.major = element_line(color = "blue", linetype="dotted"))+
+  labs(title="CDF of reviews, users + Histogram of films reviewed", x="Films Reviewed", y="Count (Histogram)/% of Users/Reviews")
+
+grid.arrange(p1,p2)
+
+
+p3 = ggplot(df.genre, aes(x=genre, y=mean_rating_star(df.genre[5:9]), size=numFilms)) +
+  geom_point() + labs(title="Distribution of Films/Ratings by Genre", y = "Rating")
+
+df.genre = df.genre[sort(df.genre$AvgRating, index.return=TRUE)$ix,]
+df.genre$xval = c(1:19)
+# p3 = ggplot(df.genre, aes(x=genre, y=mean_rating_star(df.genre[5:9]), size=numFilms)) +
+#   geom_point() + labs(title="Distribution of Films/Ratings by Genre", y = "Rating")
+
+p3 = ggplot(df.genre, aes(x=xval, y=AvgRating, label=genre)) +
+  geom_point(aes(size=numFilms)) + geom_text(vjust=2) + 
+  geom_point(aes(y=fittedGenres, size=numFilms), color="blue") +  
+labs(title="Distribution of Films/Ratings by Genre (fitted in blue)", y = "Rating", size=16)
+
+
+p4 = ggplot(df.movies, aes(x=apply(df.movies[6:24], MARGIN=1, FUN=sum), y=AvgRating)) +
+  geom_point() + labs(title="Number of genres Per Movie", x="# of Genres", y="Film Rating")
+
+
+
+grid.arrange(p3)

@@ -3,11 +3,15 @@
 # We calculate similarily for each and take the weighted average of them
 
 # A function to transform the Ordinal variable to quantitative variable
+rm(list=ls())
+
 trans_ordinal <- function(ordinal_col) { 
   M <- max(ordinal_col)
   col_trans <- (ordinal_col - 1/2) / M
   return(col_trans)
 }
+
+
 
 
 user <- read.table("~/ml-100k/u.user", sep = "|", 
@@ -155,172 +159,172 @@ regression.df = data.frame(arr_ratings_diff, arr_age, arr_gender, arr_occupation
 
 
 
-outUserDiffs = lm(regression.df)
-outUsers = lm(user$avgRating ~ user$age + user$gender + user$salaries)
+outUserDiffs = lm(arr_ratings_diff ~ . + 0, regression.df)
+outUsers = lm(user$avgRating ~ user$age + user$gender + user$salaries + 0)
 
 # affinity_matrix is a list of affinity matrix for each column (age, sex, occupation)
 #system.time(affinity_matrix <- affinity_mat(user))
 
-
-
-id_count<- function(data, id) {
-  
-  if(length(id) == 1) {
-    return(  length(data[as.numeric(data)==id])  )
-  }
-  else
-  {
-    print(id)
-    return(
-      sum(
-        mapply(
-          FUN=id_count,
-          id=id,
-          MoreArgs=list(data=data)    
-        )
-      )
-    )
-  }
-  
-}
-
-id_list<- function(data, id) {
-  if(length(id) == 1) {
-    return(  which(as.numeric(data)==id)  )
-  }
-  else
-  {
-    return(
-      c(
-        unlist(
-          mapply(
-            FUN=id_list,
-            id=id,
-            MoreArgs=list(data=data)    
-          )
-        )
-      )
-    )
-  }
-}
-
-genre_count <-mapply(
-  FUN=id_count, 
-  data=df.movies[,6:24], 
-  MoreArgs=list(id=1))
-
-df.genre$numFilms = unname(genre_count)
-
-genre_list <-mapply(
-  FUN=id_list, 
-  data=df.movies[,6:24], 
-  MoreArgs=list(id=1))
-
-
-ratingListByGenre <-mapply(
-  FUN=id_list, 
-  id=genre_list, 
-  MoreArgs=list(data=df.ratings[,2]))
-
-mean_unlist <- function(data, indexList, column) {
-  indexVector = unlist(indexList)
-  return(mean(as.numeric(data[indexVector,column])))
-}
-
-dist_unlist <- function(data, indexList, column) {
-  indexVector = unlist(indexList)
-  return(tabulate(data[indexVector,column], nbins=5 ))
-}
-
-#Input - 5 Columns, output - star rating
-mean_rating_star <- function(data)
-{
-  return(apply(data*(5:1), MARGIN=1, FUN=sum)/apply(data, MARGIN=1, FUN=sum))
-}
-
-
-
-
-df.genre$AvgRating <-
-  mapply(
-    FUN=mean_unlist,
-    indexList=ratingListByGenre,
-    MoreArgs=list(data=df.ratings, column=3)  
-  )
-
-ratingsByGenre = mapply(
-  FUN=dist_unlist,
-  indexList=ratingListByGenre,
-  MoreArgs=list(data=df.ratings, column=3)  
-)
-
-
-df.genre[,c("1","2","3","4","5")] = t(ratingsByGenre)
-
-ratingListByMovie = mapply(
-  FUN=id_list, 
-  id=df.movies$movieid, 
-  MoreArgs=list(data=df.ratings[,2]))
-
-
-
-df.movies$AvgRating = mapply(
-  FUN=mean_unlist,
-  indexList=ratingListByMovie,
-  MoreArgs=list(data=df.ratings, column=3)  
-)
-
-ratingsByMovie = mapply(
-  FUN=dist_unlist,
-  indexList=ratingListByMovie,
-  MoreArgs=list(data=df.ratings, column=3)  
-)
-
-df.movies[,c("1","2","3","4","5")] = t(ratingsByMovie)
-
-design.matrix = df.movies[,-c(1:5, 26:30)]
-for(i in 1:dim(design.matrix)[1])
-{
-  design.matrix[i,1:19] = design.matrix[i,1:19]/sum(design.matrix[i,1:19])
-}
-out = lm(AvgRating ~ ., data = design.matrix)
-
-#out = lm(AvgRating ~ ., data = df.movies[,-c(1:5, 26:30)])
-
-df.genre$fittedGenres = c(unname(out$coefficients)[2:19] + unname(out$coefficients[1]),  unname(out$coefficients[1]))
-
-
-df.movies$expectedGenreRating = fitted(out)
-
-numRatings = apply(df.movies[,26:30], MARGIN=1, FUN=sum)
-
-PriorRatings = (numRatings*df.movies$AvgRating + 20*df.movies$expectedGenreRating)/
-  (numRatings + 20)
-
-df.movies$adjustedRating = 
-  PriorRatings - df.movies$expectedGenreRating
-
-df.users$numFilms = as.numeric(table(sort(df.ratings[,1])))
-
-temp = sort.int(df.users$numFilms, index.return=TRUE)
-
-df.sortedUsers = data.frame(userid=temp$ix, numFilms=temp$x)
-df.sortedUsers$cumulative = cumsum(df.sortedUsers$numFilms)
-df.sortedUsers$sortedOrder = 1:length(df.sortedUsers$userid)
-
-df.ratingsTraining = df.ratings[which(df.ratings$userid %in% 1:743), ]
-df.ratingsTest = df.ratings[which(df.ratings$userid %in% 744:843), ]
-
-ratingListByMovie.train = mapply(
-  FUN=id_list, 
-  id=df.movies$movieid, 
-  MoreArgs=list(data=df.ratingsTraining[,2]))
-
-ratingListByMovie.test = mapply(
-  FUN=id_list, 
-  id=df.movies$movieid, 
-  MoreArgs=list(data=df.ratingsTest[,2]))
-
-moviesByAdjRating = df.movies[sort(df.movies$adjustedRating, index.return=TRUE, decreasing=TRUE)$ix,c(2,3,25,31,32)]
-
-
+# 
+# 
+# id_count<- function(data, id) {
+#   
+#   if(length(id) == 1) {
+#     return(  length(data[as.numeric(data)==id])  )
+#   }
+#   else
+#   {
+#     print(id)
+#     return(
+#       sum(
+#         mapply(
+#           FUN=id_count,
+#           id=id,
+#           MoreArgs=list(data=data)    
+#         )
+#       )
+#     )
+#   }
+#   
+# }
+# 
+# id_list<- function(data, id) {
+#   if(length(id) == 1) {
+#     return(  which(as.numeric(data)==id)  )
+#   }
+#   else
+#   {
+#     return(
+#       c(
+#         unlist(
+#           mapply(
+#             FUN=id_list,
+#             id=id,
+#             MoreArgs=list(data=data)    
+#           )
+#         )
+#       )
+#     )
+#   }
+# }
+# 
+# genre_count <-mapply(
+#   FUN=id_count, 
+#   data=df.movies[,6:24], 
+#   MoreArgs=list(id=1))
+# 
+# df.genre$numFilms = unname(genre_count)
+# 
+# genre_list <-mapply(
+#   FUN=id_list, 
+#   data=df.movies[,6:24], 
+#   MoreArgs=list(id=1))
+# 
+# 
+# ratingListByGenre <-mapply(
+#   FUN=id_list, 
+#   id=genre_list, 
+#   MoreArgs=list(data=df.ratings[,2]))
+# 
+# mean_unlist <- function(data, indexList, column) {
+#   indexVector = unlist(indexList)
+#   return(mean(as.numeric(data[indexVector,column])))
+# }
+# 
+# dist_unlist <- function(data, indexList, column) {
+#   indexVector = unlist(indexList)
+#   return(tabulate(data[indexVector,column], nbins=5 ))
+# }
+# 
+# #Input - 5 Columns, output - star rating
+# mean_rating_star <- function(data)
+# {
+#   return(apply(data*(5:1), MARGIN=1, FUN=sum)/apply(data, MARGIN=1, FUN=sum))
+# }
+# 
+# 
+# 
+# 
+# df.genre$AvgRating <-
+#   mapply(
+#     FUN=mean_unlist,
+#     indexList=ratingListByGenre,
+#     MoreArgs=list(data=df.ratings, column=3)  
+#   )
+# 
+# ratingsByGenre = mapply(
+#   FUN=dist_unlist,
+#   indexList=ratingListByGenre,
+#   MoreArgs=list(data=df.ratings, column=3)  
+# )
+# 
+# 
+# df.genre[,c("1","2","3","4","5")] = t(ratingsByGenre)
+# 
+# ratingListByMovie = mapply(
+#   FUN=id_list, 
+#   id=df.movies$movieid, 
+#   MoreArgs=list(data=df.ratings[,2]))
+# 
+# 
+# 
+# df.movies$AvgRating = mapply(
+#   FUN=mean_unlist,
+#   indexList=ratingListByMovie,
+#   MoreArgs=list(data=df.ratings, column=3)  
+# )
+# 
+# ratingsByMovie = mapply(
+#   FUN=dist_unlist,
+#   indexList=ratingListByMovie,
+#   MoreArgs=list(data=df.ratings, column=3)  
+# )
+# 
+# df.movies[,c("1","2","3","4","5")] = t(ratingsByMovie)
+# 
+# design.matrix = df.movies[,-c(1:5, 26:30)]
+# for(i in 1:dim(design.matrix)[1])
+# {
+#   design.matrix[i,1:19] = design.matrix[i,1:19]/sum(design.matrix[i,1:19])
+# }
+# out = lm(AvgRating ~ ., data = design.matrix)
+# 
+# #out = lm(AvgRating ~ ., data = df.movies[,-c(1:5, 26:30)])
+# 
+# df.genre$fittedGenres = c(unname(out$coefficients)[2:19] + unname(out$coefficients[1]),  unname(out$coefficients[1]))
+# 
+# 
+# df.movies$expectedGenreRating = fitted(out)
+# 
+# numRatings = apply(df.movies[,26:30], MARGIN=1, FUN=sum)
+# 
+# PriorRatings = (numRatings*df.movies$AvgRating + 20*df.movies$expectedGenreRating)/
+#   (numRatings + 20)
+# 
+# df.movies$adjustedRating = 
+#   PriorRatings - df.movies$expectedGenreRating
+# 
+# df.users$numFilms = as.numeric(table(sort(df.ratings[,1])))
+# 
+# temp = sort.int(df.users$numFilms, index.return=TRUE)
+# 
+# df.sortedUsers = data.frame(userid=temp$ix, numFilms=temp$x)
+# df.sortedUsers$cumulative = cumsum(df.sortedUsers$numFilms)
+# df.sortedUsers$sortedOrder = 1:length(df.sortedUsers$userid)
+# 
+# df.ratingsTraining = df.ratings[which(df.ratings$userid %in% 1:743), ]
+# df.ratingsTest = df.ratings[which(df.ratings$userid %in% 744:843), ]
+# 
+# ratingListByMovie.train = mapply(
+#   FUN=id_list, 
+#   id=df.movies$movieid, 
+#   MoreArgs=list(data=df.ratingsTraining[,2]))
+# 
+# ratingListByMovie.test = mapply(
+#   FUN=id_list, 
+#   id=df.movies$movieid, 
+#   MoreArgs=list(data=df.ratingsTest[,2]))
+# 
+# moviesByAdjRating = df.movies[sort(df.movies$adjustedRating, index.return=TRUE, decreasing=TRUE)$ix,c(2,3,25,31,32)]
+# 
+# 

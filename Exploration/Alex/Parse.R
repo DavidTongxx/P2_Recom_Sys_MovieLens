@@ -5,19 +5,19 @@ library(ggplot2)
 library(gridExtra)
 library(dplyr)
 
-data = read.table("../../Data/ml-100k/u.data")
+data = read.table("~/ml-100k/u.data")
 df.ratings = data.frame(userid=data$V1, movieid=data$V2, rating=data$V3, time=data$V4)
 rm(data)
 
-data = read.csv("../../Data/ml-100k/u.user", sep="|", header=FALSE)
+data = read.csv("~/ml-100k/u.user", sep="|", header=FALSE)
 df.users = data.frame(userid=data$V1, age=data$V2, gender=data$V3, occupation = data$V4, zip=data$V5)
 rm(data)
 
-data = read.csv("../../Data/ml-100k/u.genre", sep="|", header=FALSE)
+data = read.csv("~/ml-100k/u.genre", sep="|", header=FALSE)
 df.genre = data.frame(genre=data$V1, genreid=data$V2)
 rm(data)
 
-data = read.csv("../../Data/ml-100k/u.item", sep="|", allowEscapes=FALSE, header=FALSE)
+data = read.csv("~/ml-100k/u.item", sep="|", allowEscapes=FALSE, header=FALSE)
 colnames = c("movieid", "title", "date_released", "video_released", "IMDB_URL", as.character(df.genre$genre))
 df.movies = data.frame(data)
 colnames(df.movies) = colnames
@@ -170,12 +170,13 @@ p2 = ggplot(df.sortedUsers,aes(x=numFilms)) +
 
 grid.arrange(p1,p2)
 
-
+df.genre = df.genre[sort(df.genre$AvgRating, index.return=TRUE)$ix,]
+df.genre$xval = c(1:19)
 # p3 = ggplot(df.genre, aes(x=genre, y=mean_rating_star(df.genre[5:9]), size=numFilms)) +
 #   geom_point() + labs(title="Distribution of Films/Ratings by Genre", y = "Rating")
 
- p3 = ggplot(df.genre, aes(x=genre, y=AvgRating, size=numFilms)) +
-   geom_point() + labs(title="Distribution of Films/Ratings by Genre", y = "Rating")
+ p3 = ggplot(df.genre, aes(x=xval, y=AvgRating, label=genre)) +
+   geom_point(aes(size=numFilms)) + geom_text(vjust=2) + labs(title="Distribution of Films/Ratings by Genre", y = "Rating")
 
 
 p4 = ggplot(df.movies, aes(x=apply(df.movies[6:24], MARGIN=1, FUN=sum), y=AvgRating)) +
@@ -183,4 +184,4 @@ p4 = ggplot(df.movies, aes(x=apply(df.movies[6:24], MARGIN=1, FUN=sum), y=AvgRat
 
 
 
-grid.arrange(p3,p4)
+grid.arrange(p3)
