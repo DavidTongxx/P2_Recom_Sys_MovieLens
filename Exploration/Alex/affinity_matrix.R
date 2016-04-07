@@ -123,7 +123,7 @@ for (i in seq_len(n)) {
     index = index + 1
     age <- (user[i, 'age']-mean_user[i]) * (user[j, 'age'] - mean_user[j])
     gender <- (user[i, 'gender']-mean_user[i]) * (user[j, 'gender'] - mean_user[j])
-    occu <- (user[i, 'occupation']-mean_user[i]) * (user[j, 'occupation'] - mean_user[j])
+    occu <- (user[i, 'salaries']-mean_user[i]) * (user[j, 'salaries'] - mean_user[j])
     aff_age[i, j] <- age/sqrt(var_user[i]*var_user[j])
     aff_gender[i, j] <- gender/sqrt(var_user[i]*var_user[j])
     aff_occupation[i, j] <- occu/sqrt(var_user[i]*var_user[j])
@@ -151,12 +151,12 @@ arr_occupation = unlist(t(aff_occupation))[indexes]
 arr_count = unlist(t(aff_count))[indexes]
 arr_ratings_diff = unlist(t(aff_ratings_diff))[indexes]
 
-regression.df = data.frame(arr_ratings_diff, arr_age, arr_gender, arr_occupation, arr_count)
+regression.df = data.frame(arr_ratings_diff, arr_age, arr_gender, arr_occupation)#, arr_count)
 
 
 
-out = lm(regression.df)
-out2 = lm(user$avgRating ~ user$age + user$gender + user$occupation)
+outUserDiffs = lm(regression.df)
+outUsers = lm(user$avgRating ~ user$age + user$gender + user$salaries)
 
 # affinity_matrix is a list of affinity matrix for each column (age, sex, occupation)
 #system.time(affinity_matrix <- affinity_mat(user))
